@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <link rel="icon" href="./resources/wordbird.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <!-- Primary Meta Tags -->
+    <title>WordeBryd</title>
+    <meta name="title" content="WordeBryd">
+    <meta name="description" content="Bring back the game WordBird in browser">
+    <meta name="author" content="dthung1602">
+    <meta name="keywords" content="wordbird, word bird, retro-game, game, english learning, emulator, v86, windows 2000">
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://wordebryd.web.app/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://wordebryd.web.app/">
+    <meta property="og:site_name" content="WordeBryd">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:title" content="WordeBryd">
+    <meta property="og:description" content="Bring back the game WordBird in browser">
+    <meta property="og:image" content="https://wordebryd.web.app/resources/screen-shot.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="WordeBryd retro game running in browser">
+    <meta property="og:image:type" content="image/png">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://wordebryd.web.app/">
+    <meta name="twitter:title" content="WordeBryd">
+    <meta name="twitter:description" content="Bring back the game WordBird in browser">
+    <meta name="twitter:image" content="https://wordebryd.web.app/resources/screen-shot.png">
+    <meta name="twitter:image:alt" content="WordeBryd retro game running in browser">
+
+    <script src="resources/libv86.js"></script>
+    <script>
+        "use strict";
+        window.onload = function () {
+            // toggleCredit();
+            // return;
+            const emulator = new V86({
+                wasm_path: "./resources/v86.wasm",
+                memory_size: 512 * 1024 * 1024, // 512 MB
+                vga_memory_size: 32 * 1024 * 1024, // 32 MB
+                screen_container: document.getElementById("screen_container"),
+                disable_speaker: false,
+                initial_state: {
+                    url: "./resources/machine-state.bin.zst"
+                },
+                bios: {
+                    url: "./resources/seabios.bin",
+                },
+                vga_bios: {
+                    url: "./resources/vgabios.bin",
+                },
+                hda: {
+                    url: "./resources/windows2000/windows.img.zst",
+                    async: true,
+                    use_parts: true,
+                    fixed_chunk_size: 256 * 1024,
+                    size: 2147483648
+                },
+                cdrom: {
+                    url: "./resources/wordbird.iso.zst",
+                    async: false
+                },
+                autostart: true,
+            });
+
+            document.body.addEventListener("click", function () {
+                const ctx = emulator.speaker_adapter && emulator.speaker_adapter.audio_context;
+                if (emulator.is_running() && ctx && ctx.state === "suspended") {
+                    ctx.resume();
+                }
+            });
+
+            const canvas = document.querySelector("#screen_container canvas")
+            canvas.addEventListener("click", async () => {
+                if (!document.pointerLockElement) {
+                    await canvas.requestPointerLock({
+                        unadjustedMovement: true,
+                    });
+                }
+            });
+
+            // document.getElementById("save_file").onclick = async function()
+            // {
+            //     const new_state = await emulator.save_state();
+            //     const a = document.createElement("a");
+            //     a.download = "v86state.bin";
+            //     a.href = window.URL.createObjectURL(new Blob([new_state]));
+            //     a.dataset.downloadurl = "application/octet-stream:" + a.download + ":" + a.href;
+            //     a.click();
+            //
+            //     this.blur();
+            // };
+        };
+
+        let isCreditShow = false;
+
+        function toggleCredit() {
+            if (isCreditShow) {
+                document.getElementById("credit").style.display = "none";
+                document.getElementById("screen_container").style.display = "flex";
+            } else {
+                document.getElementById("credit").style.display = "block";
+                document.getElementById("screen_container").style.display = "none";
+            }
+            isCreditShow = !isCreditShow;
+        }
+    </script>
+    <style>
+        body {
+            margin: 0;
+            background: #659f87;
+        }
+
+        #screen_container {
+            display: flex;
+            justify-content: center;
+            width: 800px;
+            height: 600px;
+            /*outline: 1px solid red;*/
+            white-space: pre;
+            font: 14px monospace;
+            line-height: 14px;
+        }
+
+        #credit {
+            display: none;
+            /*outline: 1px solid purple;*/
+            width: 800px;
+            height: 600px;
+            background: #2d2d2d;
+            color: white;
+            padding: 100px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 16px;
+        }
+
+        #credit a {
+            color: lightgray;
+        }
+
+        #screen_container > div div {
+            display: none;
+        }
+
+        #screen_container canvas {
+            width: 800px !important;
+            height: 600px !important;
+        }
+
+        #container {
+            position: absolute;
+            display: block;
+            width: 800px;
+            height: 600px;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            /*outline: 2px solid greenyellow;*/
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        #background {
+            position: relative;
+            /*outline: 1px solid blue;*/
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #background img {
+            display: block;
+            transform: translateY(-2px);
+        }
+
+        #btn {
+            position: absolute;
+            display: block;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            /*outline: 1px solid red;*/
+            transform: translate(2px, 674px);
+            z-index: 9999;
+        }
+
+        #btn:hover {
+            border: 5px solid #8f8561;
+        }
+
+
+    </style>
+</head>
+<body>
+<div id="background">
+    <!--    <button id="save_file">-->
+    <!--        SAVE STATE-->
+    <!--    </button>-->
+    <img src="resources/background.png"/>
+    <div id="container">
+        <div id="screen_container">
+            <div></div>
+            <canvas style="display: none; width: 800px !important; height: 600px !important;"></canvas>
+        </div>
+        <div id="credit">
+            <h1>WordeBryd</h1>
+            <i>Bring back WordBird from the grave</i>
+            <p><b>Source code - </b> <a href="https://github.com/dthung1602/WordeBryd">github</a></p>
+            <p><b>Emulator - </b> <a href="https://github.com/copy/v86">v86</a></p>
+            <p><b>Windows 2000 image - </b> <a href="https://copy.sh/">copy.sh</a></p>
+            <p><b>WordBird CD image - </b> <a href="https://archive.org/details/wordbird">archive.org</a></p>
+            <p><b>Background image - </b> <a href="https://gemini.google.com/">gemini</a></p>
+        </div>
+    </div>
+    <div id="btn" onclick="toggleCredit()"></div>
+</div>
+</body>
+</html>
